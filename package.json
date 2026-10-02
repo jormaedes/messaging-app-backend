@@ -16,6 +16,7 @@
   },
   "keywords": [],
   "type": "module",
+  "engines": { "node": ">=22" },
   "bugs": {
     "url": "https://github.com/jormaedes/messaging-app-backend/issues"
   },
