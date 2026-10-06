@@ -11,3 +11,57 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id           String    @id @default(uuid())
+  username     String    @unique
+  email        String    @unique
+  passwordHash String
+  displayName  String?
+  bio          String?
+  avatarUrl    String?
+  lastSeenAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  participants Participant[]
+  messages     Message[]
+}
+
+model Conversation {
+  id        String   @id @default(uuid())
+  isGroup   Boolean  @default(false)
+  name      String?                       // para grupos
+  directKey String?  @unique              // para conversas privadas
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt           // actualizas ao enviar mensagem, para ordenar a lista
+
+  participants Participant[]
+  messages     Message[]
+}
+
+model Participant {
+  userId         String
+  conversationId String
+  joinedAt       DateTime  @default(now())
+  lastReadAt     DateTime?
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@id([userId, conversationId])
+  @@index([conversationId])
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  content        String
+  createdAt      DateTime @default(now())
+  senderId       String
+  conversationId String
+
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
