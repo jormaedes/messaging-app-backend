@@ -3,6 +3,8 @@ import type { ErrorRequestHandler } from "express";
 import cors from "cors";
 import { env } from "./config/env.js";
 import authRoutes from "./routes/auth.js";
+import userRoutes from "./routes/users.js";
+import conversationRoutes from "./routes/conversations.js";
 
 export const app = express();
 
@@ -14,6 +16,8 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
+app.use("/conversations", conversationRoutes);
 
 app.use((_req, res) => {
     res.status(404).json({ message: "Rota não encontrada" });
