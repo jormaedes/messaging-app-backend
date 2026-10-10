@@ -3,17 +3,9 @@ import { matchedData } from "express-validator";
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma.js";
 import { Prisma } from "../generated/prisma/client.js";
-import { env } from "../config/env.js";
-import { signToken } from '../lib/jwt.js'
+import { signToken } from '../lib/jwt.js';
+import { userSelf } from "../lib/selects.js";
 
-const publicUser = {
-    id: true,
-    username: true,
-    email: true,
-    displayName: true,
-    bio: true,
-    avatarUrl: true,
-} as const;
 
 export const signup: RequestHandler = async (req, res) => {
     const { username, email, password } = matchedData(req);
@@ -22,7 +14,7 @@ export const signup: RequestHandler = async (req, res) => {
     try {
         const user = await prisma.user.create({
             data: { username, email, passwordHash },
-            select: publicUser,
+            select: userSelf,
         });
         res.status(201).json({ token: signToken(user.id), user });
     } catch (err) {
@@ -52,7 +44,7 @@ export const login: RequestHandler = async (req, res) => {
 export const me: RequestHandler = async (_req, res) => {
     const user = await prisma.user.findUnique({
         where: { id: res.locals.userId },
-        select: publicUser,
+        select: userSelf,
     });
     if (!user) {
         res.status(404).json({ message: "Utilizador não encontrado" });
