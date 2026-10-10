@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import jwt from "jsonwebtoken";
+import { verifyToken } from '../lib/jwt.js'
 import { env } from "../config/env.js";
 
 export const requireAuth: RequestHandler = (req, res, next) => {
@@ -12,8 +12,7 @@ export const requireAuth: RequestHandler = (req, res, next) => {
     }
 
     try {
-        const payload = jwt.verify(token, env.JWT_SECRET);
-        res.locals.userId = typeof payload === "string" ? payload : payload.sub;
+        res.locals.userId = verifyToken(token)
         next();
     } catch {
         res.status(401).json({ message: "Token inválido ou expirado" });

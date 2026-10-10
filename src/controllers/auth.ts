@@ -1,10 +1,10 @@
 import type { RequestHandler } from "express";
 import { matchedData } from "express-validator";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
 import { Prisma } from "../generated/prisma/client.js";
 import { env } from "../config/env.js";
+import { signToken } from '../lib/jwt.js'
 
 const publicUser = {
     id: true,
@@ -14,10 +14,6 @@ const publicUser = {
     bio: true,
     avatarUrl: true,
 } as const;
-
-function signToken(userId: string) {
-    return jwt.sign({}, env.JWT_SECRET, { subject: userId, expiresIn: "7d" });
-}
 
 export const signup: RequestHandler = async (req, res) => {
     const { username, email, password } = matchedData(req);
