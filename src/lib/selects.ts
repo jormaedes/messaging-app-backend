@@ -3,6 +3,7 @@ export const userLite = {
     username: true,
     displayName: true,
     avatarUrl: true,
+    lastSeenAt: true,
 } as const;
 
 export const userSelf = {

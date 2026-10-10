@@ -3,7 +3,8 @@ import { matchedData } from "express-validator";
 import { prisma } from "../lib/prisma.js";
 import { Prisma } from "../generated/prisma/client.js";
 import { userLite } from "../lib/selects.js";
-import { getIO, userRoom } from "../socket/index.js"
+import { getIO } from "../socket/index.js";
+import { userRoom } from "../socket/rooms.js";
 
 const conversationInclude = {
     participants: { include: { user: { select: userLite } } },
