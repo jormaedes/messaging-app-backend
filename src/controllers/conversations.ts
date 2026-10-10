@@ -3,6 +3,7 @@ import { matchedData } from "express-validator";
 import { prisma } from "../lib/prisma.js";
 import { Prisma } from "../generated/prisma/client.js";
 import { userLite } from "../lib/selects.js";
+import { getIO, userRoom } from "../socket/index.js"
 
 const conversationInclude = {
     participants: { include: { user: { select: userLite } } },
@@ -130,6 +131,16 @@ export const sendMessage: RequestHandler = async (req, res) => {
             data: { updatedAt: new Date() }, // sobe a conversa na lista
         }),
     ]);
+
+    const participants = await prisma.participant.findMany({
+        where: { conversationId },
+        select: { userId: true }
+    });
+
+    // Emite para todos participantes, incluindo o proprio remetente
+    getIO()
+        .to(participants.map((p) => userRoom(p.userId)))
+        .emit("message:new", message);
 
     res.status(201).json({ message });
 };
