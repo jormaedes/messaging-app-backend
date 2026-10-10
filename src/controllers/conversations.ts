@@ -79,12 +79,23 @@ export const listConversations: RequestHandler = async (_req, res) => {
         },
     });
 
-    res.json({
-        conversations: conversations.map(({ messages, ...conversation }) => ({
-            ...conversation,
-            lastMessage: messages[0] ?? null,
-        })),
-    });
+    const result = await Promise.all(
+        conversations.map(async ({ messages, ...conversation }) => {
+            const mine = conversation.participants.find((p) => p.userId === me);
+
+            const unreadCount = await prisma.message.count({
+                where: {
+                    conversationId: conversation.id,
+                    senderId: { not: me },
+                    ...(mine?.lastReadAt ? { createdAt: { gt: mine.lastReadAt } } : {}),
+                },
+            });
+
+            return { ...conversation, lastMessage: messages[0] ?? null, unreadCount };
+        }),
+    );
+
+    res.json({ conversations: result });
 };
 
 export const listMessages: RequestHandler = async (req, res) => {
@@ -144,4 +155,34 @@ export const sendMessage: RequestHandler = async (req, res) => {
         .emit("message:new", message);
 
     res.status(201).json({ message });
+};
+
+export const markAsRead: RequestHandler = async (req, res) => {
+    const me: string = res.locals.userId;
+    const { id: conversationId } = matchedData(req);
+
+    try {
+        const { lastReadAt } = await prisma.participant.update({
+            where: { userId_conversationId: { userId: me, conversationId } },
+            data: { lastReadAt: new Date() },
+        });
+
+        const participants = await prisma.participant.findMany({
+            where: { conversationId },
+            select: { userId: true },
+        });
+
+        getIO()
+            .to(participants.map((p) => userRoom(p.userId)))
+            .emit("conversation:read", { conversationId, userId: me, lastReadAt });
+
+        res.json({ conversationId, lastReadAt });
+    } catch (err) {
+        // Não sou participante desta conversa (ou ela não existe)
+        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+            res.status(404).json({ message: "Conversa não encontrada" });
+            return;
+        }
+        throw err;
+    }
 };
