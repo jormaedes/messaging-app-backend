@@ -11,8 +11,8 @@ Construído como parte do currículo [The Odin Project](https://www.theodinproje
 ![Prisma](https://img.shields.io/badge/Prisma-2D3748?logo=prisma&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 
-- **API em produção:** `railway` -> depois
-- **Frontend:** `Depois vou atualizar` (Next.js, em desenvolvimento)
+- **Código fonte do Frontend:** [https://github.com/jormaedes/messaging-app-fontend](https://github.com/jormaedes/messaging-app-fontend)
+- **Frontend Deploy:** [Frontend Deploy](https://messagingapp-five-delta.vercel.app)
 
 ---
 
